@@ -1,0 +1,79 @@
+scalar Date
+enum Sort {
+    asc
+    desc
+}
+
+type Query {
+    accounts: [NameResult]!,
+    banks: [NameResult]!,
+    categories(categoryName: String): [Category]!
+    transactions(
+        search: String,
+        filterBy:TransactionFilterByInput,
+        orderBy: TransactionOrderByInput,
+        pagination: PaginationInput
+    ): [Transaction]!
+    transaction(id: String): Transaction!
+}
+
+type Mutation {
+    addCategory(input: CreateCategoryInput): Category
+    setCategory(input: SetCategory): Transaction
+}
+
+type Account {
+    id: ID
+    name: String
+    bank: String
+}
+
+type Category {
+    id: ID!
+    name: String
+    color: String!
+}
+
+type Transaction {
+    id: ID
+    name: String
+    amount: String
+    reference: String!
+    currency: String
+    account: Account
+    accountId: String
+    category: Category
+    categoryId: String
+    date: Date
+}
+
+input TransactionOrderByInput {
+    field: String
+    dir: Sort
+}
+
+input TransactionFilterByInput {
+    bank: String
+    account: String
+    startMonth: String
+    endMonth: String
+}
+
+input CreateCategoryInput {
+    name: String
+    color: String
+}
+
+input SetCategory {
+    transactionId: ID
+    categoryId: ID
+}
+
+input PaginationInput {
+    page: Int,
+}
+
+type NameResult {
+    name: String
+}
+

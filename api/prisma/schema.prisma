@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["metrics", "postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm]
+}
+
+model Account {
+  id                          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                        String              @db.VarChar(250)
+  bank                        String              @db.VarChar(250)
+  transactions                Transaction[]
+
+  @@map("accounts")
+}
+
+model Category {
+  id                          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                        String              @db.VarChar(250)
+  color                       String              @db.VarChar(10)
+  transactions                Transaction[]
+
+  @@map("categories")
+}
+
+model Transaction {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  amount            Decimal             @db.Decimal(9,2)
+  reference         String?             @db.VarChar(100)
+  currency          String              @db.VarChar(3)
+  date              DateTime            @default(now())
+  account           Account             @relation(fields: [accountId], references: [id])
+  accountId         String              @db.Uuid
+  category          Category            @relation(fields: [categoryId], references: [id])
+  categoryId        String              @db.Uuid
+
+  // workaround from  https://github.com/prisma/prisma/issues/17518
+  @@index([reference(ops: raw("gist_trgm_ops"))], type: Gist)
+  @@index([date])
+  @@map("transactions")
+}
